@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rsmp-nordic.org/rsmp/v4/core/static/info",
+  "title": "Static Info",
+  "description": "Payload for rsmp/{device-id}/static/info. Published as a retained message. Contains device identity and baseline metadata.",
+  "type": "object",
+  "required": ["type", "manufacturer", "model", "firmware", "buffer_drops", "features", "serial_no", "category"],
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "Device category identifier."
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Manufacturer name."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model name or number."
+    },
+    "firmware": {
+      "type": "string",
+      "description": "Firmware version string."
+    },
+    "serial_no": {
+      "type": "string",
+      "description": "Serial number or another identifier of the device."
+    },
+    "buffer_drops": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cumulative count of messages dropped from the offline buffer due to overflow. Updated only on reconnection."
+    },
+    "features": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "List of functional features supported by the device (e.g. 'rsmp-4-core', 'rsmp-4-tlc')."
+    }
+  }
+}
