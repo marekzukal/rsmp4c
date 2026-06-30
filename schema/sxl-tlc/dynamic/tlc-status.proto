@@ -1,0 +1,58 @@
+syntax = "proto3";
+package rsmp4.tlc;
+option csharp_namespace = "rsmp4.tlc";
+
+///@brief signal group state
+///@todo add LHOVRA states
+enum SignalGroupState {
+  SGS_None = 0;
+  SGS_Dark = 1;
+}
+
+enum ControlMode {
+  CM_None = 0;
+  CM_FixedTime = 1;
+  CM_ManualControl = 2;
+}
+
+enum InputOutputState {
+  IOS_Undefined = 0;
+  IOS_Inactive = 1;
+  IOS_InactiveForced = 2;
+  IOS_InactiveFailed = 3;
+
+  IOS_Active = 17;
+  IOS_ActiveForced = 18;
+  IOS_ActiveFailed = 19;
+}
+
+message InOutBlock {
+  uint32 offset = 1;
+  InputOutputState Io0 = 32;
+  ///todo fill in the gaps
+  InputOutputState Io32 = 64;
+
+}
+
+message NodeStatus {
+  TlcState state = 1;
+
+  repeated SignalGroupState signal_group_states = 2;
+  repeated InOutBlock detector_logics = 3;
+  uint32 emergency_route = 4;
+
+}
+
+enum TlcState {
+  TS_Undefined = 0;
+  TS_Starting = 5; /// S0005 Traffic Light Controller starting
+}
+
+message TlcStatus {
+  uint32 TxMillisecond = 1;
+  TlcState state = 2;
+  repeated NodeStatus nodes = 10;
+  repeated InOutBlock inputs = 11;
+  repeated InOutBlock outputs = 12;
+
+}

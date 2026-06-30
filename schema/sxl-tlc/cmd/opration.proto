@@ -1,0 +1,50 @@
+syntax = "proto3";
+package rsmp4.tlc;
+option csharp_namespace = "rsmp4.tlc";
+
+import "sxl-tlc/dynamic/tlc-status.proto";
+
+// Published on cmd/operation/L<level>.
+// Each message replaces the previous command overlay at the same level.
+// Unset fields are transparent and allow the effective value to be taken
+// from another command level according to the OCIT-O priority model.
+
+enum OperationState {
+  OS_Undefined = 0;
+  OS_Dark = 1;
+  OS_StandBy = 2;
+  OS_StandByFailure = 3;
+  OS_Operation = 20;
+}
+
+enum ModificationState {
+  MC_Undefined = 0;
+  MC_Unset = 1;
+  MC_Set = 2;
+}
+
+message ModificationCommand {
+  uint32 modification_number = 1;
+  ModificationState state = 2;
+}
+
+message Parameter {
+  string parameter_id = 1;
+  int32 numeric_value = 2;
+  string string_value = 3;
+  bytes bytes_value = 4;
+}
+
+//this is an explicit message to be able to leave it out unset
+message ExplicitOffset {
+  uint32 offset = 1;
+}
+
+message OperationCommand {
+  string source_id = 1;
+  OperationState state = 11;
+  repeated ModificationCommand modifications = 12;
+  uint32 signal_program = 13;
+  ExplicitOffset offset = 14;
+  repeated Parameter parameters = 15;
+}
