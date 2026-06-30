@@ -108,13 +108,13 @@ rsmp/{device-id}/{category}/{...}
 
 ## 3.2 Topic categories
 
-| Category     | Path pattern                              | Update frequency   | Retained | Description                                                                                                       |
-|--------------|-------------------------------------------|--------------------|----------|-------------------------------------------------------------------------------------------------------------------|
-| **Static**   | `rsmp/{device-id}/static/#`               | Low / on change    | **Yes**  | Device configuration, capabilities, self-description. Late-joining subscribers receive current state immediately. |
-| **Dynamic**  | `rsmp/{device-id}/dynamic/#`              | High / real-time   | No       | Live operational data, measurements, status updates.                                                              |
-| **History**  | `rsmp/{device-id}/history/#`              | Burst on reconnect | No       | Offline-buffered updates replayed after reconnection, mirroring `dynamic/` sub-topic structure.                   |
-| **Command**  | `rsmp/{device-id}/cmd/{command}`          | Event-driven       | No       | Command delivery (supervisor/client → device).                                                                    |
-| **Response** | `rsmp/{device-id}/cmd/{command}/response` | Event-driven       | No       | Command acknowledgement and result (device → supervisor).                                                         |
+| Category     | Path pattern                              | Update frequency      | Retained | Description                                                                                                       |
+|--------------|-------------------------------------------|-----------------------|----------|-------------------------------------------------------------------------------------------------------------------|
+| **Static**   | `rsmp/{device-id}/static/#`               | Low / on change       | **Yes**  | Device configuration, capabilities, self-description. Late-joining subscribers receive current state immediately. |
+| **Dynamic**  | `rsmp/{device-id}/dynamic/#`              | real-time / on change | Some     | Live operational data, measurements, status updates.                                                              |
+| **History**  | `rsmp/{device-id}/history/#`              | Burst on reconnect    | No       | Offline-buffered updates replayed after reconnection, mirroring `dynamic/` sub-topic structure.                   |
+| **Command**  | `rsmp/{device-id}/cmd/{command}`          | Event-driven          | No       | Command delivery (supervisor/client → device).                                                                    |
+| **Response** | `rsmp/{device-id}/cmd/{command}/response` | Event-driven          | No       | Command acknowledgement and result (device → supervisor).                                                         |
 
 ## 3.3 Static topics
 
@@ -279,7 +279,7 @@ The device handles offline resilience through a two-buffer mechanism. The superv
 
 ### Sequence numbers
 
-Every dynamic update is assigned a **monotonically increasing sequence number** (`seq`). Sequence numbers are used for deduplication and acknowledgement across both buffers.
+Every dynamic update is assigned an **increasing sequence number** (`seq`). Sequence numbers are used for deduplication and acknowledgement across both buffers. The sequence may contain gaps but the order of records must be retained.
 
 ### Online buffer
 
@@ -318,7 +318,24 @@ When the device reconnects:
    Payload: `{ "seq": <last-received-seq> }` — all updates up to and including this sequence number are removed from the offline buffer.
 3. Live dynamic updates continue in parallel on `dynamic/` topics — history replay does not block online operation.
 
-### Topic summary
+### Summary
+
+```mermaid
+
+flowchart LR
+
+published --> online-buffer
+online-buffer -----> acknowledged
+online-buffer --> pushed-offline
+pushed-offline ----> filtered-out
+offline-buffer -->republished
+pushed-offline --> offline-buffer
+republished --> offline-acknowledged
+republished --> dropped
+offline-buffer ---> dropped
+
+
+```
 
 | Topic                              | Direction           | Description                                     |
 |------------------------------------|---------------------|-------------------------------------------------|
